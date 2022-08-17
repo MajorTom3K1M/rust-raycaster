@@ -28,4 +28,9 @@ impl Window {
     pub fn swap_buffer(&self) {
         self.0.swap_buffers().unwrap();
     }
+
+    pub fn aspect_ratio(&self) -> [f32; 2] {
+        let window_size = self.0.window().inner_size();
+        [window_size.width as f32 / window_size.height as f32, 1.0]
+    }
 }

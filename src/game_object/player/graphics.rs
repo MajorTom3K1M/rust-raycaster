@@ -9,9 +9,9 @@ pub struct Graphics {
 }
 
 impl Graphics {
-    pub unsafe fn new(gl: &Context, position: [f32; 3], angle: [f32; 3]) -> Self {
+    pub unsafe fn new(gl: &Context, position: [f32; 3]) -> Self {
         let body_position = position;
-        let angle: Vec<f32> = [body_position.clone(), angle.clone()].concat();
+        let angle: Vec<f32> = [body_position.clone(), [0.0, 0.1, 0.0]].concat();
 
         let vertex_source = "
             #version 330 core
@@ -60,7 +60,8 @@ impl Graphics {
         new_body_vertices: Vec<f32>,
         new_angle_vertices: Vec<f32>,
     ) {
-        let new_angle = [new_body_vertices.clone(), new_angle_vertices].concat();
+        let line_angle_vertices = vec![new_angle_vertices[0] + new_body_vertices[0], new_angle_vertices[1] + new_body_vertices[1]];
+        let new_angle = [new_body_vertices.clone(), line_angle_vertices].concat();
         self.body_vbo.set_buffer(&gl, new_body_vertices);
         self.angle_vbo.set_buffer(&gl, new_angle);
     }

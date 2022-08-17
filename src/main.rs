@@ -19,11 +19,13 @@ struct GameObject {
 }
 
 impl GameObject {
-    fn create_game_object(gl: &Context) -> Self {
+    fn create_game_object(gl: &Context, w: &Window) -> Self {
         unsafe {
+            const PI: f32 = 3.14159;
             let position = [0.0, 0.0, 0.0];
-            let angle = [0.0, 0.1, 0.0];
-            let player = Player::new(&gl, position, angle);
+            // let angle = [0.0, 0.1, 0.0];
+            let aspect_ratio = w.aspect_ratio();
+            let player = Player::new(&gl, position, aspect_ratio);
 
             Self { player }
         }
@@ -39,10 +41,12 @@ fn main() {
 
         let (window, gl) = window::Window::build(window_builder, &event_loop);
 
+        
         let window_size = window.winit().inner_size();
+        // let aspect_ratio = window.aspect_ratio();
         gl.viewport(0, 0, window_size.width as i32, window_size.height as i32);
 
-        let game_object = GameObject::create_game_object(&gl);
+        let game_object = GameObject::create_game_object(&gl, &window);
         let map = [
             1,1,1,1,1,1,1,1,
             1,0,1,0,0,0,0,1,
@@ -53,11 +57,8 @@ fn main() {
             1,0,0,0,0,0,0,1,
             1,1,1,1,1,1,1,1,
         ];
-        // let m = Map::new(&gl, 64, 8, 8, map.to_vec());
-        // let map = [1, 1, 1, 0];
-        // let map = [1];
 
-        let m = Map::new(
+        let map_object = Map::new(
             &gl,
             64,
             8,
@@ -70,8 +71,8 @@ fn main() {
         let draw = move |gl: &Context, game_object: &GameObject| {
             gl.clear_color(0.2, 0.3, 0.3, 1.0);
             gl.clear(glow::COLOR_BUFFER_BIT);
-            m.draw(&gl);
-            // game_object.player.draw(&gl);
+            map_object.draw(&gl);
+            game_object.player.draw(&gl);
         };
 
         let update = move |gl: &Context, event: Event<()>, game_object: &mut GameObject| {

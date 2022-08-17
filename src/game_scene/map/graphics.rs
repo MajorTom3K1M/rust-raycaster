@@ -56,10 +56,10 @@ impl Graphics {
     }
 
     pub unsafe fn draw(&self, gl: &Context) {
-        // self.shader_white.activate(&gl);
+        self.shader_white.activate(&gl);
         self.map_vao.bind(&gl);
+        gl.draw_elements(glow::TRIANGLES, self.indices as i32, glow::UNSIGNED_INT, 0);
         // self.shader_black.activate(&gl);
         // gl.draw_arrays(glow::TRIANGLES, 0, self.indices as i32 * 2);
-        gl.draw_elements(glow::TRIANGLES, self.indices as i32, glow::UNSIGNED_INT, 0);
     }
 }
