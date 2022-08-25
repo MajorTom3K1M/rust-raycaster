@@ -11,7 +11,7 @@ pub struct Graphics {
 impl Graphics {
     pub unsafe fn new(gl: &Context, position: [f32; 3]) -> Self {
         let body_position = position;
-        let angle: Vec<f32> = [body_position.clone(), [0.0, 0.1, 0.0]].concat();
+        let angle: Vec<f32> = [body_position.clone(), [body_position[0], body_position[1] + 0.1, 0.0]].concat();
 
         let vertex_source = "
             #version 330 core

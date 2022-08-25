@@ -5,10 +5,10 @@ use crate::game_scene::map::graphics::Graphics;
 use crate::utils::helpers;
 
 pub struct Map {
-    map_size: u32,
-    width: u32,
-    height: u32,
-    map: Vec<u32>,
+    pub map_size: u32,
+    pub width: u32,
+    pub height: u32,
+    pub map: Vec<u32>,
     map_graphics: Graphics,
 }
 
@@ -34,25 +34,25 @@ impl Map {
                     xo = x * map_size;
                     yo = y * map_size;
                     let start_index = (map_vertices.len() / 3) as u32;
-                    map_vertices.append(&mut helpers::covert_to_2d_catesian_coord(
+                    map_vertices.append(&mut helpers::convert_to_2d_catesian_coord(
                         (map_size + xo - 1) as f32,
                         (0 + yo + 1) as f32,
                         screen_width,
                         screen_height,
                     )); // top right
-                    map_vertices.append(&mut helpers::covert_to_2d_catesian_coord(
+                    map_vertices.append(&mut helpers::convert_to_2d_catesian_coord(
                         (map_size + xo - 1) as f32,
                         (map_size + yo - 1) as f32,
                         screen_width,
                         screen_height,
                     )); // buttom right
-                    map_vertices.append(&mut helpers::covert_to_2d_catesian_coord(
+                    map_vertices.append(&mut helpers::convert_to_2d_catesian_coord(
                         (0 + xo + 1) as f32,
                         (map_size + yo - 1) as f32,
                         screen_width,
                         screen_height,
                     )); // buttom left
-                    map_vertices.append(&mut helpers::covert_to_2d_catesian_coord(
+                    map_vertices.append(&mut helpers::convert_to_2d_catesian_coord(
                         (0 + xo + 1) as f32,
                         (0 + yo + 1) as f32,
                         screen_width,

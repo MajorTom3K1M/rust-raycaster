@@ -3,7 +3,7 @@ mod game_scene;
 mod utils;
 mod window;
 
-use game_object::player::player::Player;
+use game_object::{player::player::Player, rays::rays::Rays};
 use game_scene::map::map::Map;
 use glow::{Context, HasContext};
 use window::Window;
@@ -16,18 +16,43 @@ use winit::{
 
 struct GameObject {
     player: Player,
+    rays: Rays,
+    map: Map
 }
 
 impl GameObject {
     fn create_game_object(gl: &Context, w: &Window) -> Self {
         unsafe {
-            const PI: f32 = 3.14159;
-            let position = [0.0, 0.0, 0.0];
-            // let angle = [0.0, 0.1, 0.0];
+            let position = [-0.5, -0.1, 0.0];
+            let vertex = vec![0.0];
             let aspect_ratio = w.aspect_ratio();
             let player = Player::new(&gl, position, aspect_ratio);
+            
 
-            Self { player }
+            let window_size = w.winit().inner_size();
+            let map = [
+                1,1,1,1,1,1,1,1,
+                1,0,1,0,0,0,0,1,
+                1,0,1,0,0,0,0,1,
+                1,0,1,0,0,0,0,1,
+                1,0,0,0,0,0,0,1,
+                1,0,0,0,0,1,0,1,
+                1,0,0,0,0,0,0,1,
+                1,1,1,1,1,1,1,1,
+            ];
+    
+            let map_object = Map::new(
+                &gl,
+                64,
+                8,
+                8,
+                window_size.width as f32,
+                window_size.height as f32,
+                map.to_vec(),
+            );
+            let rays = Rays::new(&gl, &player, &map_object, 60);
+
+            Self { player, rays, map: map_object }
         }
     }
 }
@@ -47,36 +72,19 @@ fn main() {
         gl.viewport(0, 0, window_size.width as i32, window_size.height as i32);
 
         let game_object = GameObject::create_game_object(&gl, &window);
-        let map = [
-            1,1,1,1,1,1,1,1,
-            1,0,1,0,0,0,0,1,
-            1,0,1,0,0,0,0,1,
-            1,0,1,0,0,0,0,1,
-            1,0,0,0,0,0,0,1,
-            1,0,0,0,0,1,0,1,
-            1,0,0,0,0,0,0,1,
-            1,1,1,1,1,1,1,1,
-        ];
-
-        let map_object = Map::new(
-            &gl,
-            64,
-            8,
-            8,
-            window_size.width as f32,
-            window_size.height as f32,
-            map.to_vec(),
-        );
 
         let draw = move |gl: &Context, game_object: &GameObject| {
             gl.clear_color(0.2, 0.3, 0.3, 1.0);
             gl.clear(glow::COLOR_BUFFER_BIT);
-            map_object.draw(&gl);
+            // map_object.draw(&gl);
+            game_object.map.draw(&gl);
             game_object.player.draw(&gl);
+            game_object.rays.draw(&gl);
         };
 
         let update = move |gl: &Context, event: Event<()>, game_object: &mut GameObject| {
             game_object.player.update(&gl, event);
+            game_object.rays.update(&gl, &game_object.player, &game_object.map);
         };
 
         run_event_loop(gl, event_loop, window, game_object, draw, update);
