@@ -76,10 +76,9 @@ fn main() {
         let draw = move |gl: &Context, game_object: &GameObject| {
             gl.clear_color(0.2, 0.3, 0.3, 1.0);
             gl.clear(glow::COLOR_BUFFER_BIT);
-            // map_object.draw(&gl);
             game_object.map.draw(&gl);
-            game_object.player.draw(&gl);
             game_object.rays.draw(&gl);
+            game_object.player.draw(&gl);
         };
 
         let update = move |gl: &Context, event: Event<()>, game_object: &mut GameObject| {

@@ -72,6 +72,7 @@ impl Graphics {
         gl.draw_arrays(glow::POINTS, 0, 1);
 
         self.angle_vao.bind(&gl);
+        gl.line_width(1.0);
         gl.draw_arrays(glow::LINES, 0, 2);
     }
 }
