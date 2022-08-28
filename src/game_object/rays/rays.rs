@@ -12,7 +12,6 @@ pub struct Rays {
 
 impl Rays {
     pub unsafe fn new(gl: &Context, player: &Player, map: &Map, rays_amount: u32) -> Self {
-        let rays_indices: Vec<f32> = vec![];
         let (line_end, walls) = Self::finding_walls(player, map, rays_amount);
         let mut vertex = player.position.clone().to_vec();
         vertex.extend_from_slice(&line_end);
@@ -39,15 +38,15 @@ impl Rays {
         let player_position =
             convert_to_2d_pixel_coord(player.position[0], player.position[1], 1024.0, 512.0);
 
-        let distance_to_wall = 320.0;
+        let distance_to_wall = 277.0;
         let mut vertex: Vec<f32> = vec![];
         let mut wall: Vec<f32> = vec![];
         let mut angle = player.angle + 30.0;
-        // let mut angle = player.angle;
         fixed_angle(&mut angle);
 
         for r in 0..rays_amount {
             //-- Check for Horizontal Line --//
+            let distorted_angle: f32 = player.angle - angle;
             let hxa: f32;
             let hya: f32;
             let dist: f32;
@@ -74,7 +73,7 @@ impl Rays {
                     break;
                 } else if map.map[(my*map_width+mx) as usize] != 0 {
                     // dist = (ax - player_position[0]) / degree_to_radian(angle).cos();
-                    dist = (player_position[1] - ay) / degree_to_radian(angle).sin();
+                    dist = (player_position[1] - ay) / degree_to_radian(angle).sin()* degree_to_radian(distorted_angle).cos();
                     break;
                 } else {
                     ax += hxa;
@@ -108,7 +107,7 @@ impl Rays {
                     vdist = f32::MAX;
                     break;
                 } else if map.map[(my*map_width+mx) as usize] != 0 {
-                    vdist = (bx - player_position[0]) / degree_to_radian(angle).cos();
+                    vdist = (bx - player_position[0]) / degree_to_radian(angle).cos() * degree_to_radian(distorted_angle).cos();
                     // vdist = (player_position[1] - by) / degree_to_radian(angle).sin();
                     break;
                 } else {
