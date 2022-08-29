@@ -12,10 +12,10 @@ pub struct Rays {
 
 impl Rays {
     pub unsafe fn new(gl: &Context, player: &Player, map: &Map, rays_amount: u32) -> Self {
-        let (line_end, walls) = Self::finding_walls(player, map, rays_amount);
+        let (line_end, wall_horizontal, wall_vertical) = Self::finding_walls(player, map, rays_amount);
         let mut vertex = player.position.clone().to_vec();
         vertex.extend_from_slice(&line_end);
-        let graphics = Graphics::new(&gl, vertex, walls);
+        let graphics = Graphics::new(&gl, vertex, wall_horizontal, wall_vertical);
 
         Self { rays: graphics, rays_amount: rays_amount }
     }
@@ -25,13 +25,13 @@ impl Rays {
     }
 
     pub unsafe fn update(&self, gl: &Context, player: &Player, map: &Map) {
-        let (line_end, walls) = Self::finding_walls(player, map, self.rays_amount);
+        let (line_end, wall_horizontal, wall_vertical) = Self::finding_walls(player, map, self.rays_amount);
         let mut vertex = player.position.clone().to_vec();
         vertex.extend_from_slice(&line_end);
-        self.rays.set_move(&gl, vertex, walls);
+        self.rays.set_move(&gl, vertex, wall_horizontal, wall_vertical);
     }
 
-    unsafe fn finding_walls(player: &Player, map: &Map, rays_amount: u32) -> (Vec<f32>, Vec<f32>) {
+    unsafe fn finding_walls(player: &Player, map: &Map, rays_amount: u32) -> (Vec<f32>, Vec<f32>, Vec<f32>) {
         let map_size = map.map_size as f32;
         let map_width = map.width as f32;
         let map_heigth = map.height as f32;
@@ -40,7 +40,9 @@ impl Rays {
 
         let distance_to_wall = 277.0;
         let mut vertex: Vec<f32> = vec![];
-        let mut wall: Vec<f32> = vec![];
+        // let mut wall: Vec<f32> = vec![];
+        let mut wall_horizontal: Vec<f32> = vec![];
+        let mut wall_vertical: Vec<f32> = vec![];
         let mut angle = player.angle + 30.0;
         fixed_angle(&mut angle);
 
@@ -72,7 +74,6 @@ impl Rays {
                     dist = f32::MAX;
                     break;
                 } else if map.map[(my*map_width+mx) as usize] != 0 {
-                    // dist = (ax - player_position[0]) / degree_to_radian(angle).cos();
                     dist = (player_position[1] - ay) / degree_to_radian(angle).sin()* degree_to_radian(distorted_angle).cos();
                     break;
                 } else {
@@ -108,7 +109,6 @@ impl Rays {
                     break;
                 } else if map.map[(my*map_width+mx) as usize] != 0 {
                     vdist = (bx - player_position[0]) / degree_to_radian(angle).cos() * degree_to_radian(distorted_angle).cos();
-                    // vdist = (player_position[1] - by) / degree_to_radian(angle).sin();
                     break;
                 } else {
                     bx += vxa;
@@ -118,10 +118,8 @@ impl Rays {
             let projected_wall_height: f32;
             if vdist < dist {
                 projected_wall_height = (map_size * distance_to_wall) / vdist;
-                vertex.extend_from_slice(&convert_to_2d_catesian_coord(bx, by, 1024.0, 512.0));
             } else {
                 projected_wall_height = (map_size * distance_to_wall) / dist;
-                vertex.extend_from_slice(&convert_to_2d_catesian_coord(ax, ay, 1024.0, 512.0));
             }
             let center = 512.0 / 2.0;
             let mut buttom_wall = center + (projected_wall_height / 2.0);
@@ -129,18 +127,30 @@ impl Rays {
             if buttom_wall >= 512.0 {
                 buttom_wall = 512.0 - 1.0;
             }
-
-            // println!("(ax: {:?} - player_position[0]: {:?}) / cos: {:?} | angle: {:?} \tr:{:?}", ax, player_position[0], degree_to_radian(angle).cos(), angle, r);
-            // println!("({:?} * {:?}) / vdist: {:?} | dist: {:?}, proj: {:?} \tr:{:?}", map_size, distance_to_wall, vdist, dist, projected_wall_height, r);
-            // println!("vdist: {:?}, dist: {:?}, proj: {:?} \tr:{:?}", vdist, dist, projected_wall_height, r);
-            // println!("buttom_wall: {:?}, top_wall: {:?}, vdist: {:?}, hdist: {:?}, proj: {:?} \tr:{:?}", buttom_wall, top_wall, vdist, dist, projected_wall_height, r);
-            wall.extend_from_slice(&convert_to_2d_catesian_coord((r*8+530) as f32, buttom_wall, 1024.0, 512.0));
-            wall.extend_from_slice(&convert_to_2d_catesian_coord((r*8+530) as f32, top_wall, 1024.0, 512.0));
+            
+            if vdist < dist {
+                // print!("{:?}",r);
+                wall_vertical.extend_from_slice(&convert_to_2d_catesian_coord((r*8+530) as f32, buttom_wall, 1024.0, 512.0));
+                wall_vertical.extend_from_slice(&convert_to_2d_catesian_coord((r*8+530) as f32, top_wall, 1024.0, 512.0));
+                wall_horizontal.extend_from_slice(&convert_to_2d_catesian_coord(0.0, 0.0, 1024.0, 512.0));
+                wall_horizontal.extend_from_slice(&convert_to_2d_catesian_coord(0.0, 0.0, 1024.0, 512.0));
+                vertex.extend_from_slice(&convert_to_2d_catesian_coord(bx, by, 1024.0, 512.0));
+            } else {
+                wall_vertical.extend_from_slice(&convert_to_2d_catesian_coord(0.0, 0.0, 1024.0, 512.0));
+                wall_vertical.extend_from_slice(&convert_to_2d_catesian_coord(0.0, 0.0, 1024.0, 512.0));
+                wall_horizontal.extend_from_slice(&convert_to_2d_catesian_coord((r*8+530) as f32, buttom_wall, 1024.0, 512.0));
+                wall_horizontal.extend_from_slice(&convert_to_2d_catesian_coord((r*8+530) as f32, top_wall, 1024.0, 512.0));
+                vertex.extend_from_slice(&convert_to_2d_catesian_coord(ax, ay, 1024.0, 512.0));
+            }
+            
+            // vertex.extend_from_slice(&convert_to_2d_catesian_coord(ax, ay, 1024.0, 512.0));
+            // wall.extend_from_slice(&convert_to_2d_catesian_coord((r*8+530) as f32, buttom_wall, 1024.0, 512.0));
+            // wall.extend_from_slice(&convert_to_2d_catesian_coord((r*8+530) as f32, top_wall, 1024.0, 512.0));
 
             angle -= 1.0;
             fixed_angle(&mut angle);
         }
 
-        return (vertex, wall);
+        return (vertex, wall_horizontal, wall_vertical);
     }
 }
