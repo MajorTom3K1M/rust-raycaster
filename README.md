@@ -57,11 +57,6 @@ Run the application using Cargo:
 cargo run --release
 ```
 
-## Project Structure
-
-- `src/` - Main source code directory
-- `Cargo.toml` - Project configuration and dependencies
-
 ## Learning Resources
 
 This project was developed as a learning exercise. Here are some resources that might be helpful:
